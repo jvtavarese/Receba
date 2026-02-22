@@ -2,6 +2,7 @@
 docs/
 CLAUDE.md
 PROGRESS.md
+.claude/
 
 # MCP (contém tokens de acesso)
 .mcp.json

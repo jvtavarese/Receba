@@ -117,7 +117,6 @@ Este projeto foi construído como laboratório prático. Algumas coisas que expl
 - **Decimal.js** para cálculos financeiros sem erros de ponto flutuante
 - **shadcn/ui** como base de componentes com Tailwind CSS
 - **GitHub Actions** para CI automatizado
-- **Supabase MCP** para gerenciar migrations diretamente pelo Claude Code
 
 ---
 
