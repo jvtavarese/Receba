@@ -1,0 +1,11 @@
+# Documentação e arquivos locais
+docs/
+CLAUDE.md
+PROGRESS.md
+
+# MCP (contém tokens de acesso)
+.mcp.json
+
+# OS
+.DS_Store
+Thumbs.db

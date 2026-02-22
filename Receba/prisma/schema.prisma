@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ModoPagamento {
+  data_exata
+  dia_fixo
+}
+
+enum StatusDuplicata {
+  pendente
+  recebido
+}
+
+model Empresa {
+  id                   String         @id @default(uuid())
+  nome                 String
+  percentual_comissao  Decimal        @db.Decimal(5, 2)
+  modo_pagamento       ModoPagamento
+  dia_fixo_pagamento   Int?
+  created_at           DateTime       @default(now())
+
+  pedidos              Pedido[]
+  metas                MetaMensal[]
+
+  @@map("empresas")
+}
+
+model Pedido {
+  id               String      @id @default(uuid())
+  empresa_id       String
+  valor_total      Decimal     @db.Decimal(12, 2)
+  data_faturamento DateTime    @db.Date
+  qtd_parcelas     Int
+  prazo_dias       Int
+  created_at       DateTime    @default(now())
+
+  empresa          Empresa     @relation(fields: [empresa_id], references: [id])
+  duplicatas       Duplicata[]
+
+  @@map("pedidos")
+}
+
+model Duplicata {
+  id                   String          @id @default(uuid())
+  pedido_id            String
+  numero_parcela       Int
+  valor                Decimal         @db.Decimal(12, 2)
+  data_vencimento      DateTime        @db.Date
+  data_real_pagamento  DateTime        @db.Date
+  status               StatusDuplicata @default(pendente)
+  data_confirmacao     DateTime?       @db.Date
+
+  pedido               Pedido          @relation(fields: [pedido_id], references: [id], onDelete: Cascade)
+
+  @@map("duplicatas")
+}
+
+model MetaMensal {
+  id          String  @id @default(uuid())
+  empresa_id  String
+  mes         Int
+  ano         Int
+  valor_meta  Decimal @db.Decimal(12, 2)
+
+  empresa     Empresa @relation(fields: [empresa_id], references: [id])
+
+  @@unique([empresa_id, mes, ano])
+  @@map("metas_mensais")
+}
