@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { headers } from "next/headers";
 import { LogoutButton } from "@/components/logout-button";
 import { NavLinks } from "@/components/nav-links";
 import { MobileNav } from "@/components/mobile-nav";
@@ -8,10 +8,8 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const headersList = headers();
+  const userEmail = headersList.get("x-user-email") ?? "";
 
   return (
     <div className="min-h-screen bg-background">
@@ -35,7 +33,7 @@ export default async function DashboardLayout({
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:inline font-mono text-xs">
-              {user?.email}
+              {userEmail}
             </span>
             <LogoutButton />
           </div>

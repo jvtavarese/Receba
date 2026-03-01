@@ -43,5 +43,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Passa email do user autenticado para Server Components via header
+  if (user) {
+    supabaseResponse.headers.set("x-user-email", user.email ?? "");
+  }
+
   return supabaseResponse;
 }
