@@ -85,57 +85,34 @@ export async function getResumoRecebiveis() {
   const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
   const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
 
-  const [semanaAtual, proxSemana, mes, atrasados] = await Promise.all([
-    prisma.duplicata.aggregate({
-      _sum: { valor: true },
-      _count: true,
-      where: {
-        status: "pendente",
-        data_real_pagamento: { gte: inicioSemana, lte: fimSemana },
-      },
-    }),
-    prisma.duplicata.aggregate({
-      _sum: { valor: true },
-      _count: true,
-      where: {
-        status: "pendente",
-        data_real_pagamento: { gte: inicioProxSemana, lte: fimProxSemana },
-      },
-    }),
-    prisma.duplicata.aggregate({
-      _sum: { valor: true },
-      _count: true,
-      where: {
-        status: "pendente",
-        data_real_pagamento: { gte: inicioMes, lte: fimMes },
-      },
-    }),
-    prisma.duplicata.aggregate({
-      _sum: { valor: true },
-      _count: true,
-      where: {
-        status: "pendente",
-        data_real_pagamento: { lt: hoje },
-      },
-    }),
-  ]);
+  const result = await prisma.$queryRaw<[{
+    semana_count: bigint;
+    semana_total: number;
+    prox_semana_count: bigint;
+    prox_semana_total: number;
+    mes_count: bigint;
+    mes_total: number;
+    atrasados_count: bigint;
+    atrasados_total: number;
+  }]>`
+    SELECT
+      COUNT(*) FILTER (WHERE data_real_pagamento >= ${inicioSemana}::date AND data_real_pagamento <= ${fimSemana}::date) AS semana_count,
+      COALESCE(SUM(valor) FILTER (WHERE data_real_pagamento >= ${inicioSemana}::date AND data_real_pagamento <= ${fimSemana}::date), 0) AS semana_total,
+      COUNT(*) FILTER (WHERE data_real_pagamento >= ${inicioProxSemana}::date AND data_real_pagamento <= ${fimProxSemana}::date) AS prox_semana_count,
+      COALESCE(SUM(valor) FILTER (WHERE data_real_pagamento >= ${inicioProxSemana}::date AND data_real_pagamento <= ${fimProxSemana}::date), 0) AS prox_semana_total,
+      COUNT(*) FILTER (WHERE data_real_pagamento >= ${inicioMes}::date AND data_real_pagamento <= ${fimMes}::date) AS mes_count,
+      COALESCE(SUM(valor) FILTER (WHERE data_real_pagamento >= ${inicioMes}::date AND data_real_pagamento <= ${fimMes}::date), 0) AS mes_total,
+      COUNT(*) FILTER (WHERE data_real_pagamento < ${hoje}::date) AS atrasados_count,
+      COALESCE(SUM(valor) FILTER (WHERE data_real_pagamento < ${hoje}::date), 0) AS atrasados_total
+    FROM duplicatas
+    WHERE status = 'pendente'
+  `;
 
+  const r = result[0];
   return {
-    semanaAtual: {
-      total: Number(semanaAtual._sum.valor ?? 0),
-      count: semanaAtual._count,
-    },
-    proxSemana: {
-      total: Number(proxSemana._sum.valor ?? 0),
-      count: proxSemana._count,
-    },
-    mes: {
-      total: Number(mes._sum.valor ?? 0),
-      count: mes._count,
-    },
-    atrasados: {
-      total: Number(atrasados._sum.valor ?? 0),
-      count: atrasados._count,
-    },
+    semanaAtual: { total: Number(r.semana_total), count: Number(r.semana_count) },
+    proxSemana: { total: Number(r.prox_semana_total), count: Number(r.prox_semana_count) },
+    mes: { total: Number(r.mes_total), count: Number(r.mes_count) },
+    atrasados: { total: Number(r.atrasados_total), count: Number(r.atrasados_count) },
   };
 }

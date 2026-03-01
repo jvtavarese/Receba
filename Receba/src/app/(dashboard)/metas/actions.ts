@@ -7,27 +7,25 @@ export async function getMetasProgresso(mes: number, ano: number) {
   const inicioMes = new Date(ano, mes - 1, 1);
   const fimMes = new Date(ano, mes, 0, 23, 59, 59);
 
-  const empresas = await prisma.empresa.findMany({
-    orderBy: { nome: "asc" },
-    include: {
-      metas: {
-        where: { mes, ano },
-        take: 1,
-      },
-      pedidos: {
-        where: {
-          data_faturamento: { gte: inicioMes, lte: fimMes },
-        },
-      },
-    },
-  });
+  const [empresas, vendas] = await Promise.all([
+    prisma.empresa.findMany({
+      orderBy: { nome: "asc" },
+      include: { metas: { where: { mes, ano }, take: 1 } },
+    }),
+    prisma.pedido.groupBy({
+      by: ["empresa_id"],
+      _sum: { valor_total: true },
+      where: { data_faturamento: { gte: inicioMes, lte: fimMes } },
+    }),
+  ]);
+
+  const vendasMap = new Map(
+    vendas.map((v) => [v.empresa_id, Number(v._sum.valor_total ?? 0)])
+  );
 
   return empresas.map((empresa) => {
     const meta = empresa.metas[0];
-    const vendido = empresa.pedidos.reduce(
-      (sum, p) => sum + Number(p.valor_total),
-      0
-    );
+    const vendido = vendasMap.get(empresa.id) ?? 0;
     const valorMeta = meta ? Number(meta.valor_meta) : 0;
     const progresso = valorMeta > 0 ? (vendido / valorMeta) * 100 : 0;
 

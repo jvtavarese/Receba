@@ -45,7 +45,7 @@ export default async function DashboardPage({
       data_fim: searchParams.data_fim,
     }),
     getResumoRecebiveis(),
-    prisma.empresa.findMany({ orderBy: { nome: "asc" } }),
+    prisma.empresa.findMany({ select: { id: true, nome: true }, orderBy: { nome: "asc" } }),
   ]);
 
   const hoje = new Date();

@@ -48,26 +48,24 @@ export async function updatePedido(id: string, formData: FormData) {
     return { error: parsed.error.issues[0].message };
   }
 
-  const empresa = await prisma.empresa.findUnique({
-    where: { id: parsed.data.empresa_id },
-  });
-  if (!empresa) {
-    return { error: "Empresa não encontrada" };
-  }
-
-  const dataFaturamento = new Date(parsed.data.data_faturamento + "T00:00:00");
-
-  const novasDuplicatas = calcularDuplicatas({
-    valor_total: parsed.data.valor_total,
-    data_faturamento: dataFaturamento,
-    qtd_parcelas: parsed.data.qtd_parcelas,
-    prazo_dias: parsed.data.prazo_dias,
-    modo_pagamento: empresa.modo_pagamento,
-    dia_fixo_pagamento: empresa.dia_fixo_pagamento,
-  });
-
   try {
     await prisma.$transaction(async (tx) => {
+      const empresa = await tx.empresa.findUnique({
+        where: { id: parsed.data.empresa_id },
+      });
+      if (!empresa) throw new Error("Empresa não encontrada");
+
+      const dataFaturamento = new Date(parsed.data.data_faturamento + "T00:00:00");
+
+      const novasDuplicatas = calcularDuplicatas({
+        valor_total: parsed.data.valor_total,
+        data_faturamento: dataFaturamento,
+        qtd_parcelas: parsed.data.qtd_parcelas,
+        prazo_dias: parsed.data.prazo_dias,
+        modo_pagamento: empresa.modo_pagamento,
+        dia_fixo_pagamento: empresa.dia_fixo_pagamento,
+      });
+
       await tx.pedido.update({
         where: { id },
         data: {
@@ -112,7 +110,10 @@ export async function updatePedido(id: string, formData: FormData) {
         });
       }
     });
-  } catch {
+  } catch (e) {
+    if (e instanceof Error && e.message === "Empresa não encontrada") {
+      return { error: e.message };
+    }
     return { error: "Erro ao atualizar pedido" };
   }
 
