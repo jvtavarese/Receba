@@ -98,107 +98,113 @@ export function PedidoForm({ empresas }: { empresas: Empresa[] }) {
 
   return (
     <form action={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2 sm:col-span-2">
-          <Label className="font-semibold">Empresa</Label>
-          <Select value={empresaId} onValueChange={setEmpresaId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione a empresa" />
-            </SelectTrigger>
-            <SelectContent>
-              {empresas.map((e) => (
-                <SelectItem key={e.id} value={e.id}>
-                  {e.nome} ({Number(e.percentual_comissao)}%)
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="rounded-xl border bg-card p-5 shadow-sm space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2 sm:col-span-2">
+            <Label className="font-semibold text-sm">Empresa</Label>
+            <Select value={empresaId} onValueChange={setEmpresaId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a empresa" />
+              </SelectTrigger>
+              <SelectContent>
+                {empresas.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.nome} ({Number(e.percentual_comissao)}%)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="valor_total" className="font-semibold">Valor Total (R$)</Label>
-          <Input
-            id="valor_total"
-            name="valor_total"
-            type="number"
-            step="0.01"
-            min="0.01"
-            required
-            value={valorTotal}
-            onChange={(e) => setValorTotal(e.target.value)}
-            placeholder="0,00"
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="valor_total" className="font-semibold text-sm">Valor Total (R$)</Label>
+            <Input
+              id="valor_total"
+              name="valor_total"
+              type="number"
+              step="0.01"
+              min="0.01"
+              required
+              value={valorTotal}
+              onChange={(e) => setValorTotal(e.target.value)}
+              placeholder="0,00"
+              className="tabular-nums"
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="data_faturamento" className="font-semibold">Data de Faturamento</Label>
-          <Input
-            id="data_faturamento"
-            name="data_faturamento"
-            type="date"
-            required
-            value={dataFaturamento}
-            onChange={(e) => setDataFaturamento(e.target.value)}
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="data_faturamento" className="font-semibold text-sm">Data de Faturamento</Label>
+            <Input
+              id="data_faturamento"
+              name="data_faturamento"
+              type="date"
+              required
+              value={dataFaturamento}
+              onChange={(e) => setDataFaturamento(e.target.value)}
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="qtd_parcelas" className="font-semibold">Parcelas</Label>
-          <Input
-            id="qtd_parcelas"
-            name="qtd_parcelas"
-            type="number"
-            min="1"
-            required
-            value={qtdParcelas}
-            onChange={(e) => setQtdParcelas(e.target.value)}
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="qtd_parcelas" className="font-semibold text-sm">Parcelas</Label>
+            <Input
+              id="qtd_parcelas"
+              name="qtd_parcelas"
+              type="number"
+              min="1"
+              required
+              value={qtdParcelas}
+              onChange={(e) => setQtdParcelas(e.target.value)}
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="prazo_dias" className="font-semibold">Prazo entre parcelas (dias)</Label>
-          <Input
-            id="prazo_dias"
-            name="prazo_dias"
-            type="number"
-            min="1"
-            required
-            value={prazoDias}
-            onChange={(e) => setPrazoDias(e.target.value)}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="prazo_dias" className="font-semibold text-sm">Prazo entre parcelas (dias)</Label>
+            <Input
+              id="prazo_dias"
+              name="prazo_dias"
+              type="number"
+              min="1"
+              required
+              value={prazoDias}
+              onChange={(e) => setPrazoDias(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Preview de duplicatas */}
       {preview.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">Preview dos Recebimentos</h3>
             {comissao > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-primary">
-                Comissão: {formatCurrency(comissao)}
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground ring-1 ring-primary/20">
+                Comissão: <span className="font-mono">{formatCurrency(comissao)}</span>
               </span>
             )}
           </div>
-          <div className="rounded-xl border bg-slate-50 overflow-hidden">
+          <div className="rounded-xl border bg-card overflow-hidden shadow-sm">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Parcela</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
-                  <TableHead>Vencimento</TableHead>
-                  <TableHead>Pagamento</TableHead>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="font-semibold">Parcela</TableHead>
+                  <TableHead className="text-right font-semibold">Valor</TableHead>
+                  <TableHead className="font-semibold">Vencimento</TableHead>
+                  <TableHead className="font-semibold">Pagamento</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {preview.map((d) => (
                   <TableRow key={d.numero_parcela}>
-                    <TableCell>{d.numero_parcela}/{preview.length}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell>
+                      <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium tabular-nums">
+                        {d.numero_parcela}/{preview.length}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums font-mono text-sm">
                       {formatCurrency(d.valor)}
                     </TableCell>
-                    <TableCell>{formatDate(d.data_vencimento)}</TableCell>
-                    <TableCell>{formatDate(d.data_real_pagamento)}</TableCell>
+                    <TableCell className="tabular-nums text-sm">{formatDate(d.data_vencimento)}</TableCell>
+                    <TableCell className="tabular-nums text-sm">{formatDate(d.data_real_pagamento)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -207,9 +213,14 @@ export function PedidoForm({ empresas }: { empresas: Empresa[] }) {
         </div>
       )}
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-destructive shrink-0" />
+          {error}
+        </div>
+      )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         <Button
           type="button"
           variant="outline"
@@ -217,8 +228,19 @@ export function PedidoForm({ empresas }: { empresas: Empresa[] }) {
         >
           Cancelar
         </Button>
-        <Button type="submit" disabled={loading || preview.length === 0}>
-          {loading ? "Salvando..." : "Confirmar Pedido"}
+        <Button
+          type="submit"
+          disabled={loading || preview.length === 0}
+          className="shadow-md shadow-primary/20 font-semibold"
+        >
+          {loading ? (
+            <>
+              <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Salvando...
+            </>
+          ) : (
+            "Confirmar Pedido"
+          )}
         </Button>
       </div>
     </form>

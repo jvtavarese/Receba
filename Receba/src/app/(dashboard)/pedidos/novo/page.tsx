@@ -10,20 +10,22 @@ export default async function NovoPedidoPage() {
 
   return (
     <div className="max-w-2xl">
-      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+      <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6">
         <Link href="/pedidos" className="hover:text-foreground transition-colors">
           Pedidos
         </Link>
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-3.5 w-3.5" />
         <span className="text-foreground font-medium">Novo Pedido</span>
       </div>
 
-      <h2 className="text-2xl font-bold mb-6">Novo Pedido</h2>
+      <h2 className="text-2xl font-bold tracking-tight mb-6">Novo Pedido</h2>
 
       {empresas.length === 0 ? (
-        <p className="text-muted-foreground">
-          Cadastre pelo menos uma empresa antes de registrar pedidos.
-        </p>
+        <div className="rounded-xl border bg-card p-8 text-center">
+          <p className="text-muted-foreground">
+            Cadastre pelo menos uma empresa antes de registrar pedidos.
+          </p>
+        </div>
       ) : (
         <PedidoForm
           empresas={empresas.map((e) => ({

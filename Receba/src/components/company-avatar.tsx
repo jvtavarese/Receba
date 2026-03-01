@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils"
 
 const COLORS = [
-  "bg-blue-500",
   "bg-emerald-500",
+  "bg-sky-500",
   "bg-violet-500",
   "bg-amber-500",
   "bg-rose-500",
-  "bg-cyan-500",
+  "bg-teal-500",
   "bg-orange-500",
   "bg-indigo-500",
 ]
@@ -32,9 +32,9 @@ interface CompanyAvatarProps {
 }
 
 const sizeClasses = {
-  sm: "h-7 w-7 text-xs",
-  md: "h-9 w-9 text-sm",
-  lg: "h-11 w-11 text-base",
+  sm: "h-7 w-7 text-[10px]",
+  md: "h-9 w-9 text-xs",
+  lg: "h-11 w-11 text-sm",
 }
 
 export function CompanyAvatar({ name, size = "md", className }: CompanyAvatarProps) {
@@ -44,7 +44,7 @@ export function CompanyAvatar({ name, size = "md", className }: CompanyAvatarPro
   return (
     <div
       className={cn(
-        "inline-flex items-center justify-center rounded-full text-white font-semibold shrink-0",
+        "inline-flex items-center justify-center rounded-lg text-white font-bold shrink-0 shadow-sm",
         colorClass,
         sizeClasses[size],
         className

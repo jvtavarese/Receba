@@ -17,9 +17,13 @@ export function ConfirmarRecebimentoButton({ id }: { id: string }) {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors disabled:opacity-50"
+      className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 bg-accent hover:bg-accent/80 rounded-lg px-2.5 py-1.5 transition-all disabled:opacity-50 active:scale-95"
     >
-      <Check className="h-3.5 w-3.5" />
+      {loading ? (
+        <div className="h-3 w-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      ) : (
+        <Check className="h-3 w-3" />
+      )}
       {loading ? "..." : "Confirmar"}
     </button>
   );

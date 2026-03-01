@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { SlidersHorizontal, X } from "lucide-react";
 
 interface Empresa {
   id: string;
@@ -35,11 +36,17 @@ export function PedidosFilters({ empresas }: { empresas: Empresa[] }) {
     router.push("/pedidos");
   }
 
+  const hasFilters = searchParams.toString().length > 0;
+
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm mb-6">
+    <div className="rounded-xl border bg-card p-4 shadow-sm">
       <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
-          <Label className="text-xs uppercase tracking-wider font-medium text-muted-foreground">Empresa</Label>
+        <div className="flex items-center gap-2 mr-1 text-muted-foreground self-end pb-2">
+          <SlidersHorizontal className="h-4 w-4" />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Empresa</Label>
           <Select
             value={searchParams.get("empresa_id") ?? "todas"}
             onValueChange={(v) => handleFilter("empresa_id", v)}
@@ -58,8 +65,8 @@ export function PedidosFilters({ empresas }: { empresas: Empresa[] }) {
           </Select>
         </div>
 
-        <div className="space-y-1">
-          <Label className="text-xs uppercase tracking-wider font-medium text-muted-foreground">De</Label>
+        <div className="space-y-1.5">
+          <Label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">De</Label>
           <Input
             type="date"
             className="w-[160px]"
@@ -68,8 +75,8 @@ export function PedidosFilters({ empresas }: { empresas: Empresa[] }) {
           />
         </div>
 
-        <div className="space-y-1">
-          <Label className="text-xs uppercase tracking-wider font-medium text-muted-foreground">Até</Label>
+        <div className="space-y-1.5">
+          <Label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Até</Label>
           <Input
             type="date"
             className="w-[160px]"
@@ -78,8 +85,9 @@ export function PedidosFilters({ empresas }: { empresas: Empresa[] }) {
           />
         </div>
 
-        {searchParams.toString() && (
-          <Button variant="ghost" size="sm" onClick={handleClear}>
+        {hasFilters && (
+          <Button variant="ghost" size="sm" onClick={handleClear} className="text-muted-foreground hover:text-foreground gap-1">
+            <X className="h-3.5 w-3.5" />
             Limpar
           </Button>
         )}
