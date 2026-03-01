@@ -45,6 +45,8 @@ model Pedido {
   empresa          Empresa     @relation(fields: [empresa_id], references: [id])
   duplicatas       Duplicata[]
 
+  @@index([empresa_id])
+  @@index([data_faturamento])
   @@map("pedidos")
 }
 
@@ -60,6 +62,9 @@ model Duplicata {
 
   pedido               Pedido          @relation(fields: [pedido_id], references: [id], onDelete: Cascade)
 
+  @@index([pedido_id])
+  @@index([status, data_real_pagamento])
+  @@index([data_real_pagamento])
   @@map("duplicatas")
 }
 
@@ -72,6 +77,7 @@ model MetaMensal {
 
   empresa     Empresa @relation(fields: [empresa_id], references: [id])
 
+  @@index([empresa_id])
   @@unique([empresa_id, mes, ano])
   @@map("metas_mensais")
 }
