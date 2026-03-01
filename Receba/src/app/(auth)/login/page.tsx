@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { login } from "./actions";
 import { Mail, Eye, EyeOff, ArrowRight, TrendingUp } from "lucide-react";
+import logoPng from "@/../public/logo.png";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -28,13 +30,13 @@ export default function LoginPage() {
         <div className="absolute inset-0 noise" />
         <div className="relative z-10 max-w-md space-y-8 animate-fade-in-up">
           <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.png"
+            <Image
+              src={logoPng}
               alt="Receba"
               width={48}
               height={48}
               className="rounded-2xl"
+              priority
             />
             <span className="text-2xl font-bold text-white tracking-tight">Receba</span>
           </div>
@@ -62,13 +64,13 @@ export default function LoginPage() {
         <div className="w-full max-w-sm animate-fade-in-up">
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.png"
+            <Image
+              src={logoPng}
               alt="Receba"
               width={40}
               height={40}
               className="rounded-xl"
+              priority
             />
             <span className="text-xl font-bold tracking-tight">Receba</span>
           </div>

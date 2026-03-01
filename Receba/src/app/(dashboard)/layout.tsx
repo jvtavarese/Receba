@@ -1,7 +1,9 @@
+import Image from "next/image";
 import { headers } from "next/headers";
 import { LogoutButton } from "@/components/logout-button";
 import { NavLinks } from "@/components/nav-links";
 import { MobileNav } from "@/components/mobile-nav";
+import logoPng from "@/../public/logo.png";
 
 export default async function DashboardLayout({
   children,
@@ -18,13 +20,13 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-5">
             <MobileNav />
             <div className="flex items-center gap-2.5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo.png"
+              <Image
+                src={logoPng}
                 alt="Receba"
                 width={32}
                 height={32}
                 className="rounded-lg"
+                priority
               />
               <h1 className="text-lg font-bold tracking-tight">Receba</h1>
             </div>
