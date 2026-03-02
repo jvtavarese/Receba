@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import { headers } from "next/headers";
 import { LogoutButton } from "@/components/logout-button";
@@ -41,7 +42,15 @@ export default async function DashboardLayout({
           </div>
         </div>
       </header>
-      <main className="container mx-auto px-4 sm:px-6 py-8">{children}</main>
+      <main className="container mx-auto px-4 sm:px-6 py-8">
+        <Suspense fallback={
+          <div className="flex items-center justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        }>
+          {children}
+        </Suspense>
+      </main>
     </div>
   );
 }

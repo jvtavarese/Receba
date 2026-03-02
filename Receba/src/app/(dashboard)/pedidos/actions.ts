@@ -117,8 +117,8 @@ export async function updatePedido(id: string, formData: FormData) {
     return { error: "Erro ao atualizar pedido" };
   }
 
-  revalidatePath("/pedidos");
-  revalidatePath("/");
+  revalidatePath("/pedidos", "page");
+  revalidatePath("/", "page");
   return { success: true };
 }
 
@@ -129,7 +129,7 @@ export async function deletePedido(id: string) {
     return { error: "Erro ao excluir pedido" };
   }
 
-  revalidatePath("/pedidos");
-  revalidatePath("/");
+  revalidatePath("/pedidos", "page");
+  revalidatePath("/", "page");
   return { success: true };
 }

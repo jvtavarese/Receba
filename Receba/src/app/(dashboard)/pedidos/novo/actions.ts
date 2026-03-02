@@ -65,7 +65,7 @@ export async function createPedido(formData: FormData) {
     return { error: "Erro ao criar pedido" };
   }
 
-  revalidatePath("/pedidos");
-  revalidatePath("/");
+  revalidatePath("/pedidos", "page");
+  revalidatePath("/", "page");
   return { success: true };
 }

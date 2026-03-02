@@ -61,7 +61,7 @@ export async function confirmarRecebimento(duplicataId: string) {
     return { error: "Erro ao confirmar recebimento" };
   }
 
-  revalidatePath("/");
+  revalidatePath("/", "page");
   return { success: true };
 }
 
