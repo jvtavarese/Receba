@@ -44,7 +44,8 @@ O app é privado (dois usuários com acesso compartilhado) e funciona bem em cel
 | UI | Tailwind CSS + shadcn/ui |
 | Auth | Supabase Auth (`@supabase/ssr`) |
 | CI/CD | GitHub Actions |
-| Deploy | Vercel *(em breve)* |
+| Deploy | Vercel |
+| Monitoramento | Vercel Speed Insights |
 
 ---
 
@@ -103,7 +104,8 @@ npm run db:push     # Sincronizar schema com o banco
 - [x] API routes para integração com n8n
 - [x] Responsividade (mobile + desktop)
 - [x] CI com GitHub Actions
-- [ ] Deploy na Vercel
+- [x] Deploy na Vercel
+- [x] Otimização de performance (indexes, queries, auth, imagens, Suspense, acessibilidade)
 
 ---
 
@@ -117,6 +119,71 @@ Este projeto foi construído como laboratório prático. Algumas coisas que expl
 - **Decimal.js** para cálculos financeiros sem erros de ponto flutuante
 - **shadcn/ui** como base de componentes com Tailwind CSS
 - **GitHub Actions** para CI automatizado
+- **Otimização de performance** — pesquisa, diagnóstico e implementação documentados abaixo
+
+---
+
+## Otimizações de performance
+
+Após o MVP funcional, fiz uma auditoria de performance no app inteiro. Identifiquei 10 problemas e implementei as correções em 6 etapas, priorizando por impacto.
+
+### 1. Indexes no banco de dados
+
+**Problema:** O Prisma cria as tabelas mas não adiciona indexes automaticamente para colunas que não são PK. Toda query filtrada (por status, data, empresa) fazia full table scan.
+
+**Solução:** Adicionei 6 indexes nas tabelas `duplicatas`, `pedidos` e `metas_mensais` — nos campos usados em `WHERE`, `JOIN` e `ORDER BY`. A migration foi aplicada via Supabase MCP e o schema Prisma atualizado com `@@index`.
+
+**Por que importa:** Indexes permitem que o PostgreSQL encontre registros sem varrer a tabela inteira. Com o crescimento de dados, a diferença entre O(n) e O(log n) é enorme.
+
+### 2. Eliminação do double auth
+
+**Problema:** Cada navegação de página fazia 2 chamadas `supabase.auth.getUser()` — uma no middleware (para proteger a rota) e outra no layout (para mostrar o email do usuário). Cada chamada é um roundtrip HTTP ao Supabase (~100-300ms).
+
+**Solução:** O middleware já valida a sessão, então passei a propagar o email do usuário via header interno (`x-user-email`). O layout agora lê `headers().get("x-user-email")` em vez de fazer uma segunda chamada auth.
+
+**Por que importa:** Eliminar 1 roundtrip por navegação economiza 100-300ms em cada clique. O header é setado server-side pelo middleware, então não há risco de segurança (clientes não conseguem forjar esse header).
+
+### 3. Otimização de queries
+
+Quatro melhorias no acesso ao banco:
+
+- **Dashboard resumo (4 aggregates → 1 raw SQL):** O dashboard fazia 4 queries `aggregate()` separadas na tabela de duplicatas (semana atual, próxima semana, mês, atrasados). Consolidei em uma única query SQL usando `FILTER (WHERE ...)` do PostgreSQL, que faz um só scan na tabela.
+
+- **Metas (JS reduce → DB groupBy):** A página de metas carregava TODOS os pedidos de todas as empresas para a memória e somava com `.reduce()` em JavaScript. Substituí por `prisma.pedido.groupBy()` com `_sum`, que faz a soma no banco e retorna apenas o total por empresa.
+
+- **Empresas no dashboard (select mínimo):** A query de empresas para o filtro carregava todas as colunas. Adicionei `select: { id: true, nome: true }` para trazer só o necessário.
+
+- **Update de pedido (lookup dentro da transaction):** O fetch da empresa era feito antes da transaction, adicionando um roundtrip sequencial. Movi para dentro do `$transaction`, reduzindo a latência total.
+
+**Por que importa:** Menos queries = menos roundtrips ao banco. Agregação no banco em vez de JS = menos dados trafegados e processados. Com o composite index `(status, data_real_pagamento)` do Step 1, a query consolidada do dashboard é especialmente rápida.
+
+### 4. Next.js config + otimização de imagens
+
+**Problema:** O `next.config.mjs` estava vazio (sem `reactStrictMode`, sem `poweredByHeader: false`), e o logo usava `<img>` raw em vez do componente `<Image>` do Next.js.
+
+**Solução:** Configurei `reactStrictMode: true` e `poweredByHeader: false`. Substituí todas as `<img>` por `<Image>` com import estático e `priority` para above-the-fold. Instalei `sharp` para otimização de imagens em produção.
+
+**Por que importa:** `next/image` gera automaticamente `srcset` com múltiplos tamanhos, converte para WebP/AVIF, e faz lazy loading. `sharp` é o engine recomendado para produção (mais rápido que o fallback `squoosh`). `reactStrictMode` ajuda a detectar bugs durante desenvolvimento.
+
+### 5. Suspense boundaries + revalidação específica
+
+**Problema:** O layout do dashboard não tinha `<Suspense>`, então qualquer data fetch lento bloqueava a página inteira sem loading indicator. Além disso, Server Actions chamavam `revalidatePath("/")` que invalidava o cache do app todo.
+
+**Solução:** Adicionei `<Suspense>` com spinner no layout. Troquei `revalidatePath("/")` por `revalidatePath("/", "page")` e `revalidatePath("/pedidos", "page")` para invalidar apenas as páginas afetadas.
+
+**Por que importa:** `<Suspense>` permite streaming — o header/nav renderiza imediato enquanto o conteúdo da página carrega com um spinner. `revalidatePath` com `"page"` evita invalidar o cache do layout e de páginas não relacionadas.
+
+### 6. Acessibilidade de animações + correção de CLS
+
+**Problema:** As animações `stagger-children` setavam `opacity: 0` inicialmente, causando Cumulative Layout Shift (CLS) — os cards "piscam" de invisível para visível. Além disso, não havia respeito a `prefers-reduced-motion`.
+
+**Solução:** Reestruturei o CSS: elementos começam com `opacity: 1` por padrão, e as animações só são aplicadas dentro de `@media (prefers-reduced-motion: no-preference)`. Adicionei fallback `prefers-reduced-motion: reduce` para desabilitar animações.
+
+**Por que importa:** CLS é uma métrica de Core Web Vitals que afeta a experiência do usuário (elementos "pulando" na tela). Respeitar `prefers-reduced-motion` é importante para acessibilidade — pessoas com vestibular disorders podem sentir desconforto com animações.
+
+### Bonus: Vercel Speed Insights
+
+Adicionei o pacote `@vercel/speed-insights` para monitorar métricas reais de performance (LCP, FID, CLS) dos usuários em produção.
 
 ---
 
