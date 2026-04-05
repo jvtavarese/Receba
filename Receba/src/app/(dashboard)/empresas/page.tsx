@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   Table,
   TableBody,
@@ -11,9 +12,18 @@ import { getEmpresas } from "./actions";
 import { EmpresaFormDialog } from "./empresa-form-dialog";
 import { DeleteEmpresaButton } from "./delete-empresa-button";
 import { CompanyAvatar } from "@/components/company-avatar";
+import { EmpresasSkeleton } from "@/components/skeletons/empresas-skeleton";
 import { Pencil, Calendar, CalendarClock, Building2 } from "lucide-react";
 
-export default async function EmpresasPage() {
+export default function EmpresasPage() {
+  return (
+    <Suspense fallback={<EmpresasSkeleton />}>
+      <EmpresasContent />
+    </Suspense>
+  );
+}
+
+async function EmpresasContent() {
   const empresas = await getEmpresas();
 
   return (
@@ -38,6 +48,7 @@ export default async function EmpresasPage() {
         <div className="rounded-xl border bg-card overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <Table>
+              <caption className="sr-only">Lista de empresas cadastradas</caption>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="font-semibold">Nome</TableHead>
@@ -90,7 +101,7 @@ export default async function EmpresasPage() {
                             dia_fixo_pagamento: empresa.dia_fixo_pagamento,
                           }}
                           trigger={
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" aria-label={`Editar ${empresa.nome}`}>
                               <Pencil className="h-3.5 w-3.5" />
                             </Button>
                           }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { updatePedido } from "./actions";
 import { Pencil } from "lucide-react";
+import { toast } from "sonner";
 
 interface EditPedidoDialogProps {
   pedido: {
@@ -29,33 +30,35 @@ interface EditPedidoDialogProps {
 export function EditPedidoDialog({ pedido }: EditPedidoDialogProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const dataFat = new Date(pedido.data_faturamento)
     .toISOString()
     .split("T")[0];
 
-  async function handleSubmit(formData: FormData) {
+  function handleSubmit(formData: FormData) {
     setError(null);
-    setLoading(true);
 
     formData.set("empresa_id", pedido.empresa_id);
 
-    const result = await updatePedido(pedido.id, formData);
-    setLoading(false);
+    startTransition(async () => {
+      const result = await updatePedido(pedido.id, formData);
 
-    if (result?.error) {
-      setError(result.error);
-      return;
-    }
+      if (result?.error) {
+        setError(result.error);
+        toast.error("Erro ao atualizar pedido");
+        return;
+      }
 
-    setOpen(false);
+      toast.success("Pedido atualizado");
+      setOpen(false);
+    });
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Editar pedido de ${pedido.empresa.nome}`}>
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
@@ -129,8 +132,8 @@ export function EditPedidoDialog({ pedido }: EditPedidoDialogProps) {
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Salvando..." : "Salvar"}
+            <Button type="submit" disabled={isPending} className={isPending ? "cursor-wait" : ""}>
+              {isPending ? "Salvando..." : "Salvar"}
             </Button>
           </div>
         </form>

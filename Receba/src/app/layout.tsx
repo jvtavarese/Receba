@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, JetBrains_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${dmSans.variable} ${jetBrainsMono.variable} font-sans`}>
         {children}
+        <Toaster richColors position="bottom-right" />
         <SpeedInsights />
       </body>
     </html>

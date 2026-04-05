@@ -1,7 +1,21 @@
+import { Suspense } from "react";
 import { getMetasProgresso } from "./actions";
 import { MetasContent } from "./metas-content";
+import { MetasSkeleton } from "@/components/skeletons/metas-skeleton";
 
-export default async function MetasPage({
+export default function MetasPage({
+  searchParams,
+}: {
+  searchParams: { mes?: string; ano?: string };
+}) {
+  return (
+    <Suspense fallback={<MetasSkeleton />}>
+      <MetasPageContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function MetasPageContent({
   searchParams,
 }: {
   searchParams: { mes?: string; ano?: string };

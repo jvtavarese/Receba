@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,7 @@ import { PedidoDetailDialog } from "./pedido-detail-dialog";
 import { EditPedidoDialog } from "./edit-pedido-dialog";
 import { DeletePedidoButton } from "./delete-pedido-button";
 import { CompanyAvatar } from "@/components/company-avatar";
+import { PedidosSkeleton } from "@/components/skeletons/pedidos-skeleton";
 import { Plus, ShoppingBag } from "lucide-react";
 
 function formatDate(date: string | Date): string {
@@ -28,7 +30,19 @@ function formatCurrency(value: string | number): string {
   });
 }
 
-export default async function PedidosPage({
+export default function PedidosPage({
+  searchParams,
+}: {
+  searchParams: { empresa_id?: string; data_inicio?: string; data_fim?: string };
+}) {
+  return (
+    <Suspense fallback={<PedidosSkeleton />}>
+      <PedidosContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function PedidosContent({
   searchParams,
 }: {
   searchParams: { empresa_id?: string; data_inicio?: string; data_fim?: string };
@@ -61,6 +75,12 @@ export default async function PedidosPage({
         empresas={empresas.map((e) => ({ id: e.id, nome: e.nome }))}
       />
 
+      {(searchParams.empresa_id || searchParams.data_inicio || searchParams.data_fim) && (
+        <p className="text-sm text-muted-foreground text-right">
+          Exibindo {pedidos.length} pedido(s)
+        </p>
+      )}
+
       {pedidos.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-muted mb-4">
@@ -73,6 +93,7 @@ export default async function PedidosPage({
         <div className="rounded-xl border bg-card overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <Table>
+              <caption className="sr-only">Lista de pedidos</caption>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="font-semibold">Empresa</TableHead>

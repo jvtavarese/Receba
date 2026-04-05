@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import Image from "next/image";
 import { headers } from "next/headers";
 import { LogoutButton } from "@/components/logout-button";
@@ -16,6 +15,9 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-card focus:text-foreground focus:rounded-lg focus:shadow-lg">
+        Pular para o conteúdo
+      </a>
       <header className="sticky top-0 z-40 border-b border-border/60 bg-card/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-5">
@@ -42,14 +44,8 @@ export default async function DashboardLayout({
           </div>
         </div>
       </header>
-      <main className="container mx-auto px-4 sm:px-6 py-8">
-        <Suspense fallback={
-          <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          </div>
-        }>
-          {children}
-        </Suspense>
+      <main id="main-content" className="container mx-auto px-4 sm:px-6 py-8">
+        {children}
       </main>
     </div>
   );

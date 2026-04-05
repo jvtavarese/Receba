@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { upsertMeta } from "./actions";
 import { Pencil } from "lucide-react";
+import { toast } from "sonner";
 
 interface MetaFormDialogProps {
   empresa_id: string;
@@ -31,25 +32,27 @@ export function MetaFormDialog({
 }: MetaFormDialogProps) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  async function handleSubmit(formData: FormData) {
+  function handleSubmit(formData: FormData) {
     setError(null);
-    setLoading(true);
 
     formData.set("empresa_id", empresa_id);
     formData.set("mes", String(mes));
     formData.set("ano", String(ano));
 
-    const result = await upsertMeta(formData);
-    setLoading(false);
+    startTransition(async () => {
+      const result = await upsertMeta(formData);
 
-    if (result?.error) {
-      setError(result.error);
-      return;
-    }
+      if (result?.error) {
+        setError(result.error);
+        toast.error("Erro ao salvar meta");
+        return;
+      }
 
-    setOpen(false);
+      toast.success("Meta salva com sucesso");
+      setOpen(false);
+    });
   }
 
   const meses = [
@@ -60,7 +63,7 @@ export function MetaFormDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Editar meta de ${empresa_nome}`}>
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
@@ -96,8 +99,8 @@ export function MetaFormDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Salvando..." : "Salvar"}
+            <Button type="submit" disabled={isPending} className={isPending ? "cursor-wait" : ""}>
+              {isPending ? "Salvando..." : "Salvar"}
             </Button>
           </div>
         </form>

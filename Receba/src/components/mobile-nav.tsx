@@ -24,7 +24,8 @@ export function MobileNav() {
         variant="ghost"
         size="sm"
         onClick={() => setOpen(!open)}
-        aria-label="Menu"
+        aria-label="Menu principal"
+        aria-expanded={open}
         className="h-9 w-9 p-0"
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -35,9 +36,10 @@ export function MobileNav() {
           <div
             className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
             onClick={() => setOpen(false)}
+            aria-hidden="true"
           />
           <div className="absolute top-16 left-0 right-0 bg-card border-b shadow-lg z-50 p-3 animate-fade-in-up">
-            <nav className="flex flex-col gap-0.5">
+            <nav role="navigation" aria-label="Menu principal" className="flex flex-col gap-0.5">
               {links.map((link) => {
                 const isActive =
                   link.href === "/"

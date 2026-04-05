@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { login } from "./actions";
 import { Mail, Eye, EyeOff, ArrowRight, TrendingUp } from "lucide-react";
+import { toast } from "sonner";
 import logoPng from "@/../public/logo.png";
 
 export default function LoginPage() {
@@ -19,6 +20,7 @@ export default function LoginPage() {
 
     if (result?.error) {
       setError(result.error);
+      toast.error(result.error);
       setLoading(false);
     }
   }

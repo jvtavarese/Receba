@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +15,7 @@ import { RecebiveisFilters } from "./recebiveis-filters";
 import { ConfirmarRecebimentoButton } from "./confirmar-recebimento-button";
 import { CompanyAvatar } from "@/components/company-avatar";
 import { StatusBadge } from "@/components/status-badge";
+import { RecebiveisSkeleton } from "@/components/skeletons/recebiveis-skeleton";
 import { CalendarDays, Clock, CalendarCheck, AlertTriangle, Plus, Receipt } from "lucide-react";
 
 function formatDate(date: string | Date): string {
@@ -27,7 +29,24 @@ function formatCurrency(value: number): string {
   });
 }
 
-export default async function DashboardPage({
+export default function DashboardPage({
+  searchParams,
+}: {
+  searchParams: {
+    empresa_id?: string;
+    status?: string;
+    data_inicio?: string;
+    data_fim?: string;
+  };
+}) {
+  return (
+    <Suspense fallback={<RecebiveisSkeleton />}>
+      <RecebiveisContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function RecebiveisContent({
   searchParams,
 }: {
   searchParams: {
@@ -116,6 +135,12 @@ export default async function DashboardPage({
         empresas={empresas.map((e) => ({ id: e.id, nome: e.nome }))}
       />
 
+      {(searchParams.empresa_id || searchParams.status || searchParams.data_inicio || searchParams.data_fim) && (
+        <p className="text-sm text-muted-foreground text-right">
+          Exibindo {duplicatas.length} duplicata(s)
+        </p>
+      )}
+
       {duplicatas.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-muted mb-4">
@@ -128,6 +153,7 @@ export default async function DashboardPage({
         <div className="rounded-xl border bg-card overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <Table>
+              <caption className="sr-only">Lista de duplicatas a receber</caption>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="font-semibold">Empresa</TableHead>

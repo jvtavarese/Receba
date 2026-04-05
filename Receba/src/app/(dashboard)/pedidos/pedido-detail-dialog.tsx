@@ -60,7 +60,7 @@ export function PedidoDetailDialog({ pedido }: PedidoDetailDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Ver detalhes do pedido">
           <Eye className="h-4 w-4" />
         </Button>
       </DialogTrigger>

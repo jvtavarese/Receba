@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { calcularDuplicatas, type DuplicataPreview } from "@/lib/duplicatas";
 import { createPedido } from "./actions";
+import { toast } from "sonner";
 
 interface Empresa {
   id: string;
@@ -52,7 +53,7 @@ export function PedidoForm({ empresas }: { empresas: Empresa[] }) {
   const [qtdParcelas, setQtdParcelas] = useState("1");
   const [prazoDias, setPrazoDias] = useState("30");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const empresaSelecionada = empresas.find((e) => e.id === empresaId);
 
@@ -79,21 +80,23 @@ export function PedidoForm({ empresas }: { empresas: Empresa[] }) {
     ? (Number(valorTotal) * Number(empresaSelecionada.percentual_comissao)) / 100
     : 0;
 
-  async function handleSubmit(formData: FormData) {
+  function handleSubmit(formData: FormData) {
     setError(null);
-    setLoading(true);
 
     formData.set("empresa_id", empresaId);
 
-    const result = await createPedido(formData);
-    setLoading(false);
+    startTransition(async () => {
+      const result = await createPedido(formData);
 
-    if (result?.error) {
-      setError(result.error);
-      return;
-    }
+      if (result?.error) {
+        setError(result.error);
+        toast.error("Erro ao criar pedido");
+        return;
+      }
 
-    router.push("/pedidos");
+      toast.success("Pedido criado com sucesso");
+      router.push("/pedidos");
+    });
   }
 
   return (
@@ -230,10 +233,10 @@ export function PedidoForm({ empresas }: { empresas: Empresa[] }) {
         </Button>
         <Button
           type="submit"
-          disabled={loading || preview.length === 0}
-          className="shadow-md shadow-primary/20 font-semibold"
+          disabled={isPending || preview.length === 0}
+          className={`shadow-md shadow-primary/20 font-semibold ${isPending ? "cursor-wait" : ""}`}
         >
-          {loading ? (
+          {isPending ? (
             <>
               <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               Salvando...

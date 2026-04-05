@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createEmpresa, updateEmpresa } from "./actions";
+import { toast } from "sonner";
 
 interface EmpresaFormDialogProps {
   empresa?: {
@@ -37,30 +38,31 @@ export function EmpresaFormDialog({ empresa, trigger }: EmpresaFormDialogProps) 
     empresa?.modo_pagamento ?? "data_exata"
   );
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const isEditing = !!empresa;
 
-  async function handleSubmit(formData: FormData) {
+  function handleSubmit(formData: FormData) {
     setError(null);
-    setLoading(true);
 
     formData.set("modo_pagamento", modoPagamento);
     if (modoPagamento === "data_exata") {
       formData.delete("dia_fixo_pagamento");
     }
 
-    const result = isEditing
-      ? await updateEmpresa(empresa.id, formData)
-      : await createEmpresa(formData);
+    startTransition(async () => {
+      const result = isEditing
+        ? await updateEmpresa(empresa.id, formData)
+        : await createEmpresa(formData);
 
-    setLoading(false);
+      if (result?.error) {
+        setError(result.error);
+        toast.error(isEditing ? "Erro ao atualizar empresa" : "Erro ao cadastrar empresa");
+        return;
+      }
 
-    if (result?.error) {
-      setError(result.error);
-      return;
-    }
-
-    setOpen(false);
+      toast.success(isEditing ? "Empresa atualizada" : "Empresa cadastrada");
+      setOpen(false);
+    });
   }
 
   return (
@@ -143,8 +145,8 @@ export function EmpresaFormDialog({ empresa, trigger }: EmpresaFormDialogProps) 
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Salvando..." : "Salvar"}
+            <Button type="submit" disabled={isPending} className={isPending ? "cursor-wait" : ""}>
+              {isPending ? "Salvando..." : "Salvar"}
             </Button>
           </div>
         </form>
