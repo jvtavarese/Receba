@@ -5,13 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Receipt, ShoppingBag, Target, Building2 } from "lucide-react";
+import { Menu, X, Receipt, ShoppingBag, Target, Building2, MessageSquare } from "lucide-react";
 
 const links = [
   { href: "/", label: "Recebíveis", icon: Receipt },
   { href: "/pedidos", label: "Pedidos", icon: ShoppingBag },
   { href: "/metas", label: "Metas", icon: Target },
   { href: "/empresas", label: "Empresas", icon: Building2 },
+  { href: "/assistente", label: "Assistente", icon: MessageSquare },
 ];
 
 export function MobileNav() {
